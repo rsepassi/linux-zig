@@ -6,5 +6,9 @@
             .url = "https://api.github.com/repos/rsepassi/alpine-zig/tarball/4c30995",
             .hash = "1220aa311f22303895c45acb9b785420e5235496707688af495d0a1c0e6705bf99b2",
         },
+        .bubblewrap_zig = .{
+            .url = "https://api.github.com/repos/rsepassi/bubblewrap-zig/tarball/89e3dfa",
+            .hash = "12200a7530f9614a8c309750f6936eab3945dc16ab6e23d6daacc94d6b032c314078",
+        },
     },
 }
