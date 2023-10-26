@@ -1,0 +1,84 @@
+#!/bin/sh
+
+set -e
+
+ZIG_TARGET=$1
+ZIG_OPTIMIZE=$2
+
+zig_arch=$(echo $ZIG_TARGET | cut -d'-' -f1)
+case $zig_arch in
+  x86)
+    kernel_arch=i386
+    kernel_src=arch/i386/boot/bzImage
+    ;;
+  x86_64)
+    kernel_arch=x86_64
+    kernel_src=arch/x86_64/boot/bzImage
+    ;;
+  arm)
+    kernel_arch=arm
+    kernel_src=arch/arm/boot/zImage
+    ;;
+  aarch64)
+    kernel_arch=arm64
+    kernel_src=arch/arm64/boot/Image
+    ;;
+  riscv64)
+    kernel_arch=riscv
+    kernel_src=arch/riscv/boot/Image
+    ;;
+  *)
+    echo "Unrecognized ARCH $ARCH"
+    exit 1
+esac
+
+apk add \
+      make \
+      llvm16 \
+      clang16 \
+      musl-dev \
+      lld \
+      linux-headers \
+      flex \
+      bison \
+      elfutils-dev \
+      openssl-dev \
+      perl \
+      rsync \
+      ncurses-dev
+
+
+mkdir linux
+tar --strip-components=1 -xf linux.tar.xz -C linux
+
+cd linux
+
+cat << EOF > clangmake
+#!/bin/sh
+# https://docs.kernel.org/kbuild/llvm.html
+make \
+  LLVM=1 \
+  ARCH=$kernel_arch \
+  CC=clang \
+  LD=ld.lld \
+  AR=llvm-ar \
+  NM=llvm-nm \
+  STRIP=llvm-strip \
+  OBJCOPY=llvm-objcopy \
+  OBJDUMP=llvm-objdump \
+  READELF=llvm-readelf \
+  HOSTCC=clang \
+  HOSTCXX=clang-c++ \
+  HOSTAR=llvm-ar \
+  HOSTLD=ld.lld \
+  "\$@"
+EOF
+chmod +x clangmake
+
+# Configure
+./clangmake defconfig
+
+# Build
+./clangmake "-j$(nproc)"
+
+cp $kernel_src /zig-out/kernel

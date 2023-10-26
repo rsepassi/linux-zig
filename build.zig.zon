@@ -1,0 +1,10 @@
+.{
+    .name = "linux-zig",
+    .version = "0.0.0",
+    .dependencies = .{
+        .alpine_zig = .{
+            .url = "https://api.github.com/repos/rsepassi/alpine-zig/tarball/4c30995",
+            .hash = "1220aa311f22303895c45acb9b785420e5235496707688af495d0a1c0e6705bf99b2",
+        },
+    },
+}
